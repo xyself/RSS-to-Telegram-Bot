@@ -5,6 +5,7 @@
 from __future__ import annotations
 from typing import Optional, Union, Any
 import html
+import zlib
 import aiohttp
 from aiohttp_socks import ProxyConnector
 
@@ -133,7 +134,64 @@ def render_widget_html(title: Optional[str] = None,
     else:
         final_html = base_frame.replace(placeholder, content_html)
 
+    # Telegram 10.4 constraint: max 32768 bytes UTF-8, and max 4096 bytes when compressed with zlib level 9
+    while len(final_html.encode('utf-8')) > 30000 or len(zlib.compress(final_html.encode('utf-8'), level=9)) > 4000:
+        available_content_bytes = int(available_content_bytes * 0.75)
+        if available_content_bytes < 50:
+            break
+        truncated_content = content_bytes[:available_content_bytes].decode('utf-8', errors='ignore')
+        if link:
+            truncated_content += f'<p><i>... (内容较长已截断，<a href="{html.escape(link)}">阅读全文</a>)</i></p>'
+        else:
+            truncated_content += '<p><i>... (内容较长已截断)</i></p>'
+        final_html = base_frame.replace(placeholder, truncated_content)
+
     return final_html
+
+
+def render_help_widget_html(is_manager: bool = False, lang: Optional[str] = None) -> str:
+    """
+    Render clean Telegram Bot API 10.4 Native Widget for /help command.
+    """
+    css = (
+        '<style>'
+        ':root{color-scheme:light dark;}'
+        'body{margin:0;padding:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.5;color:var(--tg-theme-text-color,#222);background:var(--tg-theme-bg-color,#fff);}'
+        '.card{border-radius:12px;}'
+        '.title{font-size:16px;font-weight:700;color:var(--tg-theme-link-color,#2481cc);margin-bottom:4px;display:flex;align-items:center;gap:6px;}'
+        '.sub{font-size:12px;opacity:0.7;margin-bottom:12px;}'
+        '.sec-title{font-weight:600;font-size:13px;margin:10px 0 4px 0;opacity:0.85;border-bottom:1px solid rgba(128,128,128,0.2);padding-bottom:2px;}'
+        '.item{padding:3px 0;font-size:13px;}'
+        '.code{font-family:monospace;font-weight:bold;color:var(--tg-theme-link-color,#2481cc);background:rgba(36,129,204,0.08);padding:1px 4px;border-radius:4px;}'
+        '.tip{margin-top:12px;padding:8px 10px;border-radius:8px;background:rgba(128,128,128,0.08);font-size:12px;line-height:1.4;}'
+        '</style>'
+    )
+
+    manager_section = ''
+    if is_manager:
+        manager_section = (
+            '<div class="sec-title">🛠 管理员命令</div>'
+            '<div class="item"><span class="code">/set_option</span> 调整机器人全局系统参数</div>'
+            '<div class="item"><span class="code">/user_info</span> 查看或修改用户信息</div>'
+        )
+
+    html_content = (
+        f'<!DOCTYPE html><html><head><meta charset="utf-8">{css}</head><body><div class="card">'
+        '<div class="title">🤖 RSStT · Telegram 10.4 原生 Widget</div>'
+        '<div class="sub">关心你的阅读体验的 Telegram RSS 机器人</div>'
+        '<div class="sec-title">📌 常用命令</div>'
+        '<div class="item"><span class="code">/sub</span> 添加订阅</div>'
+        '<div class="item"><span class="code">/unsub</span> 退订指定订阅</div>'
+        '<div class="item"><span class="code">/list</span> 查看订阅列表</div>'
+        '<div class="item"><span class="code">/set</span> 调整单个订阅个性化设置</div>'
+        '<div class="item"><span class="code">/set_default</span> 设置全局默认偏好</div>'
+        '<div class="sec-title">⚡ 10.4 专属测试命令</div>'
+        '<div class="item"><span class="code">/test &lt;url&gt;</span> 测试抓取并以 10.4 Widget 发送文章</div>'
+        f'{manager_section}'
+        '<div class="tip">💡 <b>频道使用提示：</b>在频道中请将 Bot 设为管理员，并在私聊发送 <code>/sub @频道名 &lt;RSS地址&gt;</code> 绑定订阅。</div>'
+        '</div></body></html>'
+    )
+    return html_content
 
 
 async def send_widget(chat_id: Union[int, str],

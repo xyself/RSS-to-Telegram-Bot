@@ -89,6 +89,19 @@ async def cmd_or_callback_help(
     msg = i18n[lang]['manager_help_msg_html' if event.chat_id in env.MANAGER else 'help_msg_html']
     if event.is_private:
         msg += '\n\n' + i18n[lang]['usage_in_channel_or_group_prompt_html']
+        if getattr(env, 'ENABLE_WIDGET', True) and (isinstance(event, TypeEventMsg) or not hasattr(event, 'edit')):
+            try:
+                from ..helpers import bot_api
+                help_widget = bot_api.render_help_widget_html(
+                    is_manager=event.chat_id in env.MANAGER,
+                    lang=lang
+                )
+                res = await bot_api.send_widget(chat_id=event.chat_id, html_content=help_widget)
+                if res and res.get('message_id'):
+                    return
+            except Exception as e:
+                logger.debug(f'Send help via Bot API 10.4 Widget skipped: {e}')
+
     await (
         event.respond(msg, parse_mode='html', link_preview=False)
         if isinstance(event, TypeEventMsg) or not hasattr(event, 'edit')
