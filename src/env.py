@@ -343,12 +343,14 @@ def __get_database_url() -> str:
         except ValueError as _err:
             err = _err
         else:
-            return str(
-                # Tortoise-ORM does not recognize 'postgresql' scheme
-                y_url.with_scheme('postgres')
-                if y_url.scheme == 'postgresql'
-                else y_url
-            )
+            if y_url.scheme in ('postgresql', 'postgres'):
+                query = dict(y_url.query)
+                query.pop('channel_binding', None)
+                if 'sslmode' in query:
+                    query.pop('sslmode')
+                    query['ssl'] = 'true'
+                return str(y_url.with_scheme('postgres').with_query(query))
+            return str(y_url)
     else:
         logger.critical('INVALID DATABASE URL!', exc_info=err)
 
