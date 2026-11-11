@@ -131,6 +131,25 @@ class Post:
         """
         for _ in range(3):
             try:
+                # Telegram Bot API 10.4 HTML Widget support for private chats (user_id > 0)
+                if user_id > 0 and (send_mode == 3 or (send_mode == 0 and getattr(env, 'ENABLE_WIDGET', True))):
+                    try:
+                        from ..helpers import bot_api
+                        widget_html = bot_api.render_widget_html(
+                            title=self.title,
+                            feed_title=sub_title or self.feed_title,
+                            author=self.author if display_author != -1 else None,
+                            content_html=self.html or '',
+                            link=self.link,
+                            tags=tags
+                        )
+                        res = await bot_api.send_widget(chat_id=user_id, html_content=widget_html)
+                        if res and res.get('message_id'):
+                            logger.info(f'Sent post {self.link} to {user_id} via Bot API 10.4 Widget (msg_id={res.get("message_id")})')
+                            return res
+                    except Exception as e:
+                        logger.debug(f'Send post via Bot API 10.4 Widget skipped or failed: {e}')
+
                 formatted_post_tuple = \
                     await self.post_formatter.get_formatted_post(sub_title=sub_title,
                                                                  tags=tags,

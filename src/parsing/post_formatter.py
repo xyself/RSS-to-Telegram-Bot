@@ -37,6 +37,7 @@ FORCE_ENABLE: Final = 1
 FORCE_LINK: Final = -1
 FORCE_TELEGRAPH: Final = 1
 FORCE_MESSAGE: Final = 2
+FORCE_WIDGET: Final = 3
 FEED_TITLE_AND_LINK: Final = 0
 FEED_TITLE_AND_LINK_AS_POST_TITLE: Final = 1
 NO_FEED_TITLE_BUT_LINK_AS_POST_TITLE: Final = -3
@@ -158,7 +159,7 @@ class PostFormatter:
         :param display_media: -1=disable, 0=enable
         :return: (formatted post, need media, need linkpreview)
         """
-        assert send_mode in {FORCE_LINK, AUTO, FORCE_TELEGRAPH, FORCE_MESSAGE}
+        assert send_mode in {FORCE_LINK, AUTO, FORCE_TELEGRAPH, FORCE_MESSAGE, FORCE_WIDGET}
         assert isinstance(length_limit, int) and length_limit >= 0
         assert link_preview in {DISABLE, AUTO, FORCE_ENABLE}
         assert display_author in {DISABLE, AUTO, FORCE_DISPLAY}
@@ -253,7 +254,7 @@ class PostFormatter:
 
         # ---- determine message_type ----
         normal_msg_post = None
-        if send_mode == FORCE_MESSAGE:
+        if send_mode == FORCE_MESSAGE or send_mode == FORCE_WIDGET:
             message_type = NORMAL_MESSAGE
         elif send_mode == FORCE_LINK and self.link:
             message_type = LINK_MESSAGE

@@ -101,6 +101,7 @@
         "send_mode_0": "Auto",
         "send_mode_1": "Force Telegraph",
         "send_mode_2": "Force Telegram messages",
+        "send_mode_3": "Native Widget (10.4)",
         "length_limit": "Length limit (auto mode only)",
         "length_limit_unlimited": "Unlimited",
         "link_preview": "Link preview",

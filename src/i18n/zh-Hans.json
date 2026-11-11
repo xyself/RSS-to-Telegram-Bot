@@ -101,6 +101,7 @@
         "send_mode_0": "自动",
         "send_mode_1": "强制 Telegragh",
         "send_mode_2": "强制 Telegram 消息",
+        "send_mode_3": "原生 Widget 组件 (10.4)",
         "length_limit": "长度限制 (仅限自动模式)",
         "length_limit_unlimited": "无限制",
         "link_preview": "链接预览",

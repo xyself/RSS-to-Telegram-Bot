@@ -30,7 +30,7 @@ from ...parsing.utils import escape_hashtags
 
 SUB_OPTIONS_EXHAUSTIVE_VALUES = {
     "notify": (1, 0),
-    "send_mode": (0, 1, 2, -1),
+    "send_mode": (0, 1, 2, -1, 3),
     "link_preview": (0, 1, -1),
     "display_media": (0, 1, -1),
     "display_author": (0, 1, -1),

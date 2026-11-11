@@ -158,6 +158,22 @@ async def respond_or_answer(
     with suppress(*UserBlockedErrors):  # silently ignore
         # noinspection PyProtectedMember
         if isinstance(event, TypeEventCb) and not event._answered:
+            # Bot API 10.4: For group/channel callback queries, send an ephemeral reply visible only to the user
+            if getattr(event, 'is_group', False) and getattr(event, 'query', None) and msg and isinstance(msg, str):
+                try:
+                    from ..helpers import bot_api
+                    ephemeral_res = await bot_api.send_ephemeral_message(
+                        chat_id=event.chat_id,
+                        text=msg,
+                        callback_query_id=event.query.id
+                    )
+                    if ephemeral_res:
+                        with suppress(Exception):
+                            await event.answer(cache_time=cache_time)
+                        return
+                except Exception as e:
+                    logger.debug(f'Send ephemeral reply failed, fallback to standard answer: {e}')
+
             # answering callback query is of a tolerant rate limit, no lock needed
             with suppress(QueryIdInvalidError):  # callback query expired, respond instead
                 await event.answer(msg, alert=alert, cache_time=cache_time)

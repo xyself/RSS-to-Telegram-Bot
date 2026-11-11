@@ -358,6 +358,7 @@ DATABASE_URL: Final = __get_database_url()
 # ----- misc config -----
 TABLE_TO_IMAGE: Final = __bool_parser(os.environ.get('TABLE_TO_IMAGE'))
 TRAFFIC_SAVING: Final = __bool_parser(os.environ.get('TRAFFIC_SAVING'))
+ENABLE_WIDGET: Final = __bool_parser(os.environ.get('ENABLE_WIDGET'), default_value=True)
 LAZY_MEDIA_VALIDATION: Final = __bool_parser(os.environ.get('LAZY_MEDIA_VALIDATION'))
 NO_UVLOOP: Final = __bool_parser(os.environ.get('NO_UVLOOP'))
 MULTIPROCESSING: Final = __bool_parser(os.environ.get('MULTIPROCESSING'))
