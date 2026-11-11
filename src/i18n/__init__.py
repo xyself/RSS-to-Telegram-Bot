@@ -25,7 +25,7 @@ from telethon.tl import types
 
 I18N_PATH = path.split(path.realpath(__file__))[0]
 ALL_LANGUAGES = tuple(sorted(lang[:-5] for lang in listdir(I18N_PATH) if lang.endswith('.json')))
-FALLBACK_LANGUAGE = istr('en')
+FALLBACK_LANGUAGE = istr('zh-Hans')
 NO_FALLBACK_KEYS = {istr('iso_639_code')}
 
 REPO_TYPE = 'GitHub'
